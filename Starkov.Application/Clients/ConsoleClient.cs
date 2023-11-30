@@ -45,12 +45,13 @@ public class ConsoleClient : IConsoleClient
         Console.WriteLine("Доступные команды:");
         Console.WriteLine("1) help");
         Console.WriteLine("2) import <path> <type> - импорт файла в БД" +
-            "\n <path> - полный путь до tsv файла" +
-            "\n <type> - тип импорта (d - отделы, e - сотрудники, j - должности)");
+            "\n\t <path> - полный путь до tsv файла" +
+            "\n\t <type> - тип импорта (d - отделы, e - сотрудники, j - должности)");
         Console.WriteLine("3) output <count> - вывод данных на экран" +
-            "\n <count> - натуральное число, количество элементов для вывода на каждом уровне");
-        Console.WriteLine("4) details <id> <count> - добавление новых подуровней для конкретного узла" +
-            "\n <id>");
+            "\n\t <count> - натуральное число, количество элементов для вывода на каждом уровне");
+        Console.WriteLine("4) details <id> <count> - добавление новых подуровней" +
+            "\n\t <id> - id отдела для которого надо вывести дополнительные уровни" +
+            "\n\t <count> - количество элементов для вывода на уровне");
     }
 
     private async Task InitTree()
