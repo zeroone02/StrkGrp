@@ -133,7 +133,7 @@ public class ImportService
             {
                 data.JobTitle = jobTitlesMap[item.JobTitleName];
             }
-            else
+            else if(!string.IsNullOrEmpty(item.JobTitleName))
             {
                 data.JobTitle = await _titleRepository.GetAsync(item.JobTitleName);
                 jobTitlesMap.Add(item.JobTitleName, data.JobTitle);
@@ -143,10 +143,17 @@ public class ImportService
             {
                 data.Department = departmentsDictionary[item.DepartmentName];
             }
-            else
+            else if(!string.IsNullOrEmpty(item.DepartmentName))
             {
                 data.Department = await _departmentRepository.GetAsync(item.DepartmentName);
                 departmentsDictionary.Add(item.DepartmentName, data.Department);
+            }
+
+            if(data.Department == null || data.JobTitle == null)
+            {
+                toAdd.Remove(data);
+                toUpdate.Remove(data);
+                Console.WriteLine($"{Path.GetFileName(path)}: сломанные данные, отсутствует отдел или должность");
             }
         }
 

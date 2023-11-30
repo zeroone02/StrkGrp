@@ -93,14 +93,10 @@ public class ConsoleClient : IConsoleClient
         else if(command == "expand")
         {
             _employeesCount = Convert.ToInt32(args[0]);
-            await CreateTree(10, _employeesCount);
-            Console.WriteLine();
-            await DrawTreeAsync(_tree.Departments, 0);
-            Console.WriteLine();
         }
         else if (command == "output")
         {
-            await CreateTree(10, _employeesCount);
+            await CreateTree();
             Console.WriteLine();
             await DrawTreeAsync(_tree.Departments, 0);
             Console.WriteLine();
@@ -139,9 +135,9 @@ public class ConsoleClient : IConsoleClient
         }
     }
 
-    private async Task CreateTree(int count)
+    private async Task CreateTree()
     {
-        _tree.Departments = new Collection<DepartmentTreeItem>(await CreateTree(null, count));
+        _tree.Departments = new Collection<DepartmentTreeItem>(await CreateTree(null, _employeesCount));
     }
 
     private async Task<List<DepartmentTreeItem>> CreateTree(int? id, int employeesCount)

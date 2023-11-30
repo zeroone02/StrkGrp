@@ -11,9 +11,11 @@ public class DepartmentRepository : IDepartmentRepository
         _context = context;
     }
 
-    public Task<Department> GetAsync(string name, string parentName)
+    public async Task<Department> GetAsync(string name, string parentName)
     {
-        return _context.Departments.FirstOrDefaultAsync(x => x.Name == name && x.ParentDepartment.Name == parentName);
+        var item = await GetAsync(parentName);
+        int? id = item?.Id;
+        return await _context.Departments.FirstOrDefaultAsync(x => x.Name == name && x.ParentDepartmentId == id);
     }
 
     public async Task<IQueryable<Department>> GetQueryableAsync()
