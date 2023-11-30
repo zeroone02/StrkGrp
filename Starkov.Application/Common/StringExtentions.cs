@@ -1,4 +1,7 @@
-﻿namespace Starkov.Application.Common;
+﻿using System.Security.Cryptography;
+using System.Text;
+
+namespace Starkov.Application.Common;
 public static class StringExtentions
 {
     public static string NormalizePhoneNumber(this string phone)
@@ -23,5 +26,13 @@ public static class StringExtentions
     {
         var arr = str.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         return string.Join(' ', arr);
+    }
+
+    public static string GenerateSHA256Hash(string str)
+    {
+        using var sha256 = SHA256.Create();
+
+        return Encoding.UTF8.GetString(
+            sha256.ComputeHash(Encoding.UTF8.GetBytes(str)));
     }
 }

@@ -1,5 +1,4 @@
-﻿using Starkov.Application.Dtos;
-using System.Data;
+﻿using Starkov.Application.Dtos.ViewModels;
 
 namespace Starkov.Application.Common;
 public sealed class Reader
@@ -23,10 +22,14 @@ public sealed class Reader
                 continue;
             }
 
-            data[]
+            TrimEmptyData(data);
 
             result.Add(new ReaderDepartmentViewModel
             {
+                Name = data[0],
+                ParentDepartment = data[1],
+                Manager = data[2],
+                Phone = data[3].NormalizePhoneNumber()
             });
         }
 
@@ -52,12 +55,15 @@ public sealed class Reader
                 continue;
             }
 
-            data[3] = data[3].NormalizePhoneNumber();
             TrimEmptyData(data);
 
             result.Add(new ReaderEmployeeViewModel
             {
-                
+                Department = data[0],
+                FullName = data[1],
+                Login = data[2],
+                RawPassword = data[3],
+                JobTitle = data[4],
             });
         }
 
@@ -83,7 +89,12 @@ public sealed class Reader
                 continue;
             }
 
-            result.Add();
+            TrimEmptyData(data);
+
+            result.Add(new ReaderJobTitleViewModel
+            {
+                Name = data[0]
+            });
         }
 
         return result;

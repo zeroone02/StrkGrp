@@ -13,7 +13,6 @@ public class StarkovDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        Departments.add
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Department>(cfg =>

@@ -1,7 +1,5 @@
-﻿using Starkov.Domain;
-
-namespace Starkov.Application.Dtos;
-internal class ReaderDepartmentViewModel
+﻿namespace Starkov.Application.Dtos.ViewModels;
+public class ReaderDepartmentViewModel
 {
     public string Name { get; set; }
     public string ParentDepartment { get; set; }

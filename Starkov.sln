@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Starkov.Console", "Starkov.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1C444A40-222F-45ED-8C77-50A6AD29890A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ddd", "ddd", "{2E4B6701-CF31-410D-8BD0-870D867CAF76}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Starkov.Application", "Starkov.Application\Starkov.Application.csproj", "{6B7E2848-7F6E-4F64-BC74-4251ACA9FCF1}"
 EndProject
 Global
