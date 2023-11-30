@@ -6,9 +6,9 @@ namespace Starkov.EFCore.Repositories;
 public class DepartmentRepository : IDepartmentRepository
 {
     private StarkovDbContext _context;
-    public DepartmentRepository()
+    public DepartmentRepository(StarkovDbContext context)
     {
-        _context = new StarkovDbContextFactory().CreateDbContext();
+        _context = context;
     }
 
     public Task<Department> GetAsync(string name, string parentName)

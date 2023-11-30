@@ -6,9 +6,9 @@ namespace Starkov.EFCore.Repositories;
 public class EmployeeRepository : IEmployeeRepository
 {
     private readonly StarkovDbContext _context;
-    public EmployeeRepository()
+    public EmployeeRepository(StarkovDbContext context)
     {
-        _context = new StarkovDbContextFactory().CreateDbContext();
+        _context = context;
     }
     public Task<bool> ContainsAsync(int id)
     {

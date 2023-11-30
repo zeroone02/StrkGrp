@@ -7,9 +7,9 @@ namespace Starkov.EFCore.Repositories;
 public class JobTitleRepository : IJobTitleRepository
 {
     private readonly StarkovDbContext _context;
-    public JobTitleRepository()
+    public JobTitleRepository(StarkovDbContext context)
     {
-        _context = new StarkovDbContextFactory().CreateDbContext();
+        _context = context;
     }
 
     public Task<bool> ContainsAsync(string name)

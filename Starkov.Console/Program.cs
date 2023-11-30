@@ -1,8 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Starkov.Application;
 using Starkov.Application.Interfaces;
+using Starkov.Domain.Repositories;
 using Starkov.EFCore;
+using Starkov.EFCore.Repositories;
+
 namespace Starkov;
 public class Program
 {
@@ -11,7 +15,6 @@ public class Program
         try
         {
             var provider = ConfigureServices();
-            await MigrateAsync();
             var servie = provider.GetRequiredService<IConsoleClient>();
             await servie.RunAsync();
             return 1;
@@ -32,17 +35,15 @@ public class Program
             .AddJsonFile("appsettings.json", false, true)
             .Build();
 
-        IServiceCollection serviceCollection = new ServiceCollection();
-        serviceCollection.AddDbContext<StarkovDbContext>();
+        IServiceCollection services = new ServiceCollection();
 
-        return serviceCollection.BuildServiceProvider();
-    }
+        services.AddDbContext<StarkovDbContext>();
+        services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IJobTitleRepository, JobTitleRepository>();
+        services.AddTransient<ImportService>();
+        services.AddTransient<IConsoleClient, IConsoleClient>();
 
-    private static async Task MigrateAsync()
-    {
-        using (var context = new StarkovDbContextFactory().CreateDbContext())
-        {
-            await context.Database.MigrateAsync();
-        }
+        return services.BuildServiceProvider();
     }
 }

@@ -33,23 +33,41 @@ public class ConsoleClient : IConsoleClient
         Help();
         do
         {
-            
+            command = Console.ReadLine();
         }
         while (command != "выход");
 
         await InitTree();
     }
 
+    private (string, KeyValuePair<string, string>[]) ParseCommand(string command)
+    {
+        var arr = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        KeyValuePair<string, string>[] options = new KeyValuePair<string, string>[arr.Length / 2 - 1];
+
+        for (int i = 1; i < arr.Length; i++)
+        {
+            arr[i]
+        }
+
+        return (arr[0], options);
+    }
+
+    private async Task Invoke(string command, KeyValuePair<string, string>[] args)
+    {
+        if (command == )
+    }
+
     private void Help()
     {
         Console.WriteLine("Доступные команды:");
         Console.WriteLine("1) help");
-        Console.WriteLine("2) import <path> <type> - импорт файла в БД" +
+        Console.WriteLine("2) import -p <path> -t <type> - импорт файла в БД" +
             "\n\t <path> - полный путь до tsv файла" +
             "\n\t <type> - тип импорта (d - отделы, e - сотрудники, j - должности)");
-        Console.WriteLine("3) output <count> - вывод данных на экран" +
+        Console.WriteLine("3) output -c <count> - вывод данных на экран" +
             "\n\t <count> - натуральное число, количество элементов для вывода на каждом уровне");
-        Console.WriteLine("4) details <id> <count> - добавление новых подуровней" +
+        Console.WriteLine("4) details -id <id> -c <count> - добавление новых подуровней" +
             "\n\t <id> - id отдела для которого надо вывести дополнительные уровни" +
             "\n\t <count> - количество элементов для вывода на уровне");
     }
