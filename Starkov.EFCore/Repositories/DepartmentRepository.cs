@@ -18,7 +18,9 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task<IQueryable<Department>> GetQueryableAsync()
     {
-        return _context.Departments;
+        return _context.Departments
+            .Include(x => x.Manager)
+            .Include(x => x.ParentDepartment);
     }
 
     public Task<Department> GetAsync(int id)

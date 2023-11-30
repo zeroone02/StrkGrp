@@ -6,4 +6,5 @@ public interface IEmployeeRepository
     Task<Employee> GetAsync(string fullName);
     Task InsertRangeAsync(IEnumerable<Employee> items);
     Task UpdateRangeAsync(IEnumerable<Employee> items);
+    Task<IQueryable<Employee>> GetQueryableAsync();
 }

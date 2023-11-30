@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Starkov.Application\Starkov.Application.csproj" />
     <ProjectReference Include="..\Starkov.EFCore\Starkov.EFCore.csproj" />
   </ItemGroup>
 

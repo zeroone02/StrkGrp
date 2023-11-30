@@ -8,4 +8,5 @@ public class DepartmentTreeItem
     public EmployeeItem Manager { get; set; }
     public Collection<DepartmentTreeItem> Departments { get; set; }
     public Collection<EmployeeItem> Employees { get; set; }
+    public int DirectChildrenCount { get; set; }
 }

@@ -10,6 +10,8 @@ public class StarkovDbContext : DbContext
 
     }
     public DbSet<Department> Departments { get; set; }
+    public DbSet<Employee> Employees { get; set; }
+    public DbSet<JobTitle> JobTitles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
