@@ -1,7 +1,8 @@
 ﻿namespace Starkov.Domain.Repositories;
 public interface IJobTitleRepository
 {
-    Task<bool> ContainsAsync(int id);
-    Task<JobTitle> UpsertRangeAsync(IEnumerable<JobTitle> department);
     Task<JobTitle> GetAsync(int id);
+    Task<JobTitle> GetAsync(string name);
+    Task InsertRange(IEnumerable<JobTitle> items);
+    Task UpdateRange(IEnumerable<JobTitle> items);
 }

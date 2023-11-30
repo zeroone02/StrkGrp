@@ -28,7 +28,7 @@ public static class StringExtentions
         return string.Join(' ', arr);
     }
 
-    public static string GenerateSHA256Hash(string str)
+    public static string GenerateSHA256Hash(this string str)
     {
         using var sha256 = SHA256.Create();
 

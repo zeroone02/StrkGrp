@@ -11,7 +11,7 @@ var config = new ConfigurationBuilder()
 IServiceCollection serviceCollection = new ServiceCollection();
 serviceCollection.AddDbContext<StarkovDbContext>();
 
-using(var context = new StarkovDbContextFactory().CreateDbContext(args))
+using (var context = new StarkovDbContextFactory().CreateDbContext())
 {
     await context.Database.MigrateAsync();
 }

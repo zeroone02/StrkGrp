@@ -1,103 +1,103 @@
-﻿using Starkov.Application.Dtos.ViewModels;
+﻿using Starkov.Application.Common;
+using Starkov.Application.Dtos.ViewModels;
 
-namespace Starkov.Application.Common;
-public sealed class Reader
+namespace Starkov.Application;
+public sealed class TsvReader
 {
-    public async Task<IEnumerable<ReaderDepartmentViewModel>> ReadTsvAsDepartmentAsync(string path)
+    public async IAsyncEnumerable<ReaderDepartmentViewModel> ReadTsvAsDepartmentAsync(string path)
     {
         ThrowIfFileIncorrect(path);
 
-        var result = new List<ReaderDepartmentViewModel>();
         const int dataLength = 4;
+        int count = 1;
 
         using var reader = new StreamReader(path);
         await reader.ReadLineAsync(); //скипаем заголовок файла
-
         while (!reader.EndOfStream)
         {
+            count++;
             string line = await reader.ReadLineAsync();
             string[] data = line.Split('\t');
             if (IsLengthIncorrectOrEmpty(data, dataLength))
             {
+                await Console.Out.WriteLineAsync($"{Path.GetFileName(path)}: сломанные данные, строка: {count}");
                 continue;
             }
 
             TrimEmptyData(data);
 
-            result.Add(new ReaderDepartmentViewModel
+            yield return new ReaderDepartmentViewModel
             {
                 Name = data[0],
                 ParentDepartment = data[1],
-                Manager = data[2],
+                ManagerFullName = data[2],
                 Phone = data[3].NormalizePhoneNumber()
             });
         }
 
-        return result;
     }
 
-    public async Task<IEnumerable<ReaderEmployeeViewModel>> ReadTsvAsEmployeeAsync(string path)
+    public async IAsyncEnumerable<ReaderEmployeeViewModel> ReadTsvAsEmployeeAsync(string path)
     {
         ThrowIfFileIncorrect(path);
 
-        var result = new List<ReaderEmployeeViewModel>();
         const int dataLength = 5;
+        int count = 1;
 
         using var reader = new StreamReader(path);
         await reader.ReadLineAsync(); //скипаем заголовок файла
-
         while (!reader.EndOfStream)
         {
+            count++;
             string line = await reader.ReadLineAsync();
             string[] data = line.Split('\t');
             if (IsLengthIncorrectOrEmpty(data, dataLength))
             {
+                await Console.Out.WriteLineAsync($"{Path.GetFileName(path)}: сломанные данные, строка: {count}");
                 continue;
             }
 
             TrimEmptyData(data);
 
-            result.Add(new ReaderEmployeeViewModel
+            yield return new ReaderEmployeeViewModel
             {
                 Department = data[0],
                 FullName = data[1],
                 Login = data[2],
                 RawPassword = data[3],
                 JobTitle = data[4],
-            });
+            };
         }
-
-        return result;
     }
 
-    public async Task<IEnumerable<ReaderJobTitleViewModel>> ReadTsvAsJobTitleAsync(string path)
+    public async IAsyncEnumerable<ReaderJobTitleViewModel> ReadTsvAsJobTitleAsync(string path)
     {
         ThrowIfFileIncorrect(path);
 
-        var result = new List<ReaderJobTitleViewModel>();
         const int dataLength = 2;
+        int count = 1;
 
         using var reader = new StreamReader(path);
         await reader.ReadLineAsync(); //скипаем заголовок файла
 
         while (!reader.EndOfStream)
         {
+            count++;
             string line = await reader.ReadLineAsync();
             string[] data = line.Split('\t');
             if (IsLengthIncorrectOrEmpty(data, dataLength))
             {
+                await Console.Out.WriteLineAsync($"{Path.GetFileName(path)}: сломанные данные, строка: {count}");
                 continue;
             }
 
             TrimEmptyData(data);
 
-            result.Add(new ReaderJobTitleViewModel
+            yield return new ReaderJobTitleViewModel
             {
                 Name = data[0]
-            });
+            };
         }
-
-        return result;
     }
 
     private void ThrowIfFileIncorrect(string path)
@@ -108,7 +108,7 @@ public sealed class Reader
         }
         if (Path.GetExtension(path).ToLower() != ".tsv")
         {
-            throw new InvalidOperationException("Invalid file type, expected *.tsv");
+            throw new InvalidOperationException("Неправильный формат файла, ожидалось: tsv");
         }
     }
 
