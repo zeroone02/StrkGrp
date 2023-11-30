@@ -1,4 +1,5 @@
-﻿using Starkov.Domain;
+﻿using Microsoft.EntityFrameworkCore;
+using Starkov.Domain;
 using Starkov.Domain.Repositories;
 
 namespace Starkov.EFCore.Repositories;
@@ -27,16 +28,20 @@ public class EmployeeRepository : IEmployeeRepository
 
     public async Task<IQueryable<Employee>> GetQueryableAsync()
     {
-        return _context.Employees;
+        return _context.Employees
+            .Include(x => x.Department)
+            .Include(x => x.JobTitle);
     }
 
-    public Task InsertRangeAsync(IEnumerable<Employee> items)
+    public async Task InsertRangeAsync(IEnumerable<Employee> items)
     {
-        throw new NotImplementedException();
+        await _context.Employees.AddRangeAsync(items);
+        await _context.SaveChangesAsync();
     }
 
-    public Task UpdateRangeAsync(IEnumerable<Employee> items)
+    public async Task UpdateRangeAsync(IEnumerable<Employee> items)
     {
-        throw new NotImplementedException();
+        _context.Employees.UpdateRange(items.ToList());
+        await _context.SaveChangesAsync();
     }
 }

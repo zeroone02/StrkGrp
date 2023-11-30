@@ -1,5 +1,7 @@
-﻿using Starkov.Domain;
+﻿using Microsoft.EntityFrameworkCore;
+using Starkov.Domain;
 using Starkov.Domain.Repositories;
+using System.Xml.Linq;
 
 namespace Starkov.EFCore.Repositories;
 public class JobTitleRepository : IJobTitleRepository
@@ -12,31 +14,33 @@ public class JobTitleRepository : IJobTitleRepository
 
     public Task<bool> ContainsAsync(string name)
     {
-        throw new NotImplementedException();
+        return _context.JobTitles.AnyAsync(x => x.Name == name);
     }
 
     public Task<JobTitle> GetAsync(int id)
     {
-        throw new NotImplementedException();
+        return _context.JobTitles.FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public Task<JobTitle> GetAsync(string name)
     {
-        throw new NotImplementedException();
+        return _context.JobTitles.FirstOrDefaultAsync(x => x.Name == name);
     }
 
     public Task<List<JobTitle>> GetListAsync()
     {
-        throw new NotImplementedException();
+        return _context.JobTitles.ToListAsync();
     }
 
-    public Task InsertRange(IEnumerable<JobTitle> items)
+    public async Task InsertRange(IEnumerable<JobTitle> items)
     {
-        throw new NotImplementedException();
+        await _context.JobTitles.AddRangeAsync(items);
+        await _context.SaveChangesAsync();
     }
 
-    public Task UpdateRange(IEnumerable<JobTitle> items)
+    public async Task UpdateRange(IEnumerable<JobTitle> items)
     {
-        throw new NotImplementedException();
+        _context.JobTitles.UpdateRange(items);
+        await _context.SaveChangesAsync();
     }
 }

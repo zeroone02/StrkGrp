@@ -30,23 +30,13 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task InsertRangeAsync(IEnumerable<Department> items)
     {
-        await _context.Departments.AddRangeAsync(GetAsCollection(items));
+        await _context.Departments.AddRangeAsync(items);
         await _context.SaveChangesAsync();
     }
 
     public Task UpdateRangeAsync(IEnumerable<Department> items)
     {
-        _context.Departments.UpdateRange(GetAsCollection(items));
+        _context.Departments.UpdateRange(items);
         return _context.SaveChangesAsync();
-    }
-
-    private ICollection<Department> GetAsCollection(IEnumerable<Department> departments) 
-    { 
-        if(departments is ICollection<Department> collections)
-        {
-            return collections;
-        }
-
-        return departments.ToList();
     }
 }
