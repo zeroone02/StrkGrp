@@ -2,6 +2,7 @@
 using Starkov.Application.Dtos;
 using Starkov.Domain;
 using Starkov.Domain.Repositories;
+using System.Data;
 
 namespace Starkov.Application;
 public class ImportService
@@ -27,7 +28,7 @@ public class ImportService
         {
             ImportType.Department => await ImportDepartmentsAsync(path),
             ImportType.Employee => await ImportEmployeeAsync(path),
-            ImportType.JobTitle => await ImportEmployeeTitleAsync(path),
+            ImportType.JobTitle => await ImportJobTitleAsync(path),
             _ => throw new ArgumentException("Неизвестный тип импорта")
         };
     }
@@ -64,6 +65,10 @@ public class ImportService
             {
                 data.ParentDepartment = departments[item.ParentDepartment];
             }
+            else
+            {
+                departments.Add(item.Name, data);
+            }
 
             if (employees.ContainsKey(item.ManagerFullName))
             {
@@ -77,15 +82,13 @@ public class ImportService
                     employees.Add(data.Manager.FullName, data.Manager);
                 }
             }
-
-            departments.Add(item.Name, data);
         }
 
-        if(toAdd.Any())
+        if (toAdd.Any())
         {
             await _departmentRepository.InsertRangeAsync(toAdd);
         }
-        if(toUpdate.Any())
+        if (toUpdate.Any())
         {
             await _departmentRepository.UpdateRangeAsync(toAdd);
         }
@@ -104,6 +107,7 @@ public class ImportService
         List<Employee> toUpdate = new List<Employee>();
 
         var jobTitlesMap = new Dictionary<string, JobTitle>();
+        var departmentsDictionary = new Dictionary<string, Department>();
 
         await foreach (var item in _tsvReader.ReadTsvAsEmployeeAsync(path))
         {
@@ -114,14 +118,14 @@ public class ImportService
                 {
                     FullName = item.FullName,
                     Login = item.Login,
-                    PasswordHash = item.RawPassword.GenerateSHA256Hash()
+                    PasswordHash = item.RawPassword.ToMd5()
                 };
                 toAdd.Add(data);
             }
             else
             {
                 data.Login = item.Login;
-                data.PasswordHash = item.RawPassword.GenerateSHA256Hash();
+                data.PasswordHash = item.RawPassword.ToMd5();
                 toUpdate.Add(data);
             }
 
@@ -132,9 +136,18 @@ public class ImportService
             else
             {
                 data.JobTitle = await _titleRepository.GetAsync(item.JobTitleName);
+                jobTitlesMap.Add(item.JobTitleName, data.JobTitle);
             }
 
-            jobTitlesMap.Add(item.JobTitleName, data.JobTitle);
+            if(departmentsDictionary.ContainsKey(item.DepartmentName))
+            {
+                data.Department = departmentsDictionary[item.DepartmentName];
+            }
+            else
+            {
+                data.Department = await _departmentRepository.GetAsync(item.DepartmentName);
+                departmentsDictionary.Add(item.DepartmentName, data.Department);
+            }
         }
 
         if (toAdd.Count > 0)
@@ -154,7 +167,7 @@ public class ImportService
         };
     }
 
-    private async Task<TsvImportResult> ImportEmployeeTitleAsync(string path)
+    private async Task<TsvImportResult> ImportJobTitleAsync(string path)
     {
         var toAdd = new List<JobTitle>();
         await foreach (var item in _tsvReader.ReadTsvAsJobTitleAsync(path))
@@ -166,6 +179,11 @@ public class ImportService
                     Name = item.Name
                 });
             }
+        }
+
+        if(toAdd.Any())
+        {
+            await _titleRepository.InsertRange(toAdd);
         }
 
         return new TsvImportResult

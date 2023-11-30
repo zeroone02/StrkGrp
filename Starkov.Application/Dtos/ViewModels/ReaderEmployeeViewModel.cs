@@ -7,5 +7,5 @@ public class ReaderEmployeeViewModel
     public string Login { get; set; }
     public string RawPassword { get; set; }
     public string JobTitleName { get; set; }
-    public string Department { get; set; }
+    public string DepartmentName { get; set; }
 }

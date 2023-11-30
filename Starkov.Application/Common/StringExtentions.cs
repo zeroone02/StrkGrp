@@ -28,11 +28,20 @@ public static class StringExtentions
         return string.Join(' ', arr);
     }
 
-    public static string GenerateSHA256Hash(this string str)
+    public static string ToMd5(this string str)
     {
-        using var sha256 = SHA256.Create();
+        using (var md5 = MD5.Create())
+        {
+            var inputBytes = Encoding.UTF8.GetBytes(str);
+            var hashBytes = md5.ComputeHash(inputBytes);
 
-        return Encoding.UTF8.GetString(
-            sha256.ComputeHash(Encoding.UTF8.GetBytes(str)));
+            var sb = new StringBuilder();
+            foreach (var hashByte in hashBytes)
+            {
+                sb.Append(hashByte.ToString("X2"));
+            }
+
+            return sb.ToString();
+        }
     }
 }

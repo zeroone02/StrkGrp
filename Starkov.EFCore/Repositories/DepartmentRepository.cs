@@ -39,4 +39,9 @@ public class DepartmentRepository : IDepartmentRepository
         _context.Departments.UpdateRange(items);
         return _context.SaveChangesAsync();
     }
+
+    public Task<Department> GetAsync(string name)
+    {
+        return _context.Departments.FirstOrDefaultAsync(x => x.Name == name);
+    }
 }

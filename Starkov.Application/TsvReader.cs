@@ -60,7 +60,7 @@ public sealed class TsvReader
 
             yield return new ReaderEmployeeViewModel
             {
-                Department = data[0],
+                DepartmentName = data[0],
                 FullName = data[1],
                 Login = data[2],
                 RawPassword = data[3],
@@ -73,7 +73,7 @@ public sealed class TsvReader
     {
         ThrowIfFileIncorrect(path);
 
-        const int dataLength = 2;
+        const int dataLength = 1;
         int count = 1;
 
         using var reader = new StreamReader(path);
