@@ -12,7 +12,7 @@ public class ConsoleClient : IConsoleClient
     private readonly IEmployeeRepository _employeeRepository;
     private OrganizationTree _tree;
 
-    private int _maxSize = 10;
+    private int _employeesCount = 10;
     private string[] _availableCommands = { "help", "import", "output", "details" };
     public ConsoleClient(
         ImportService service,
@@ -86,15 +86,30 @@ public class ConsoleClient : IConsoleClient
 
             await _service.ImportTsvAsync(path, type);
         }
+        else if (command == "help")
+        {
+            Help();
+        }
+        else if(command == "expand")
+        {
+            _employeesCount = Convert.ToInt32(args[0]);
+            await CreateTree(10, _employeesCount);
+            Console.WriteLine();
+            await DrawTreeAsync(_tree.Departments, 0);
+            Console.WriteLine();
+        }
         else if (command == "output")
         {
-            await CreateTree();
+            await CreateTree(10, _employeesCount);
+            Console.WriteLine();
             await DrawTreeAsync(_tree.Departments, 0);
+            Console.WriteLine();
         }
     }
 
     private void Help()
     {
+        Console.WriteLine();
         Console.WriteLine("Доступные команды:");
         Console.WriteLine("1) help");
         Console.WriteLine("2) import -p <path> -t <type> - импорт файла в БД" +
@@ -102,9 +117,9 @@ public class ConsoleClient : IConsoleClient
             "\n\t <type> - тип импорта (d - отделы, e - сотрудники, j - должности)");
         Console.WriteLine("3) output -c <count> - вывод данных на экран" +
             "\n\t <count> - натуральное число, количество элементов для вывода на каждом уровне");
-        Console.WriteLine("4) details -id <id> -c <count> - добавление новых подуровней" +
-            "\n\t <id> - id отдела для которого надо вывести дополнительные уровни" +
-            "\n\t <count> - количество элементов для вывода на уровне");
+        Console.WriteLine("4) expand <count> - установка максимального количества сотрудников для вывода" +
+            "\n\t <count> - число, количество сотрудников (-1 для вывода всех, по умолчанию 10)");
+        Console.WriteLine();
     }
 
     private async Task DrawTreeAsync(IEnumerable<DepartmentTreeItem> items, int depth)
@@ -124,12 +139,12 @@ public class ConsoleClient : IConsoleClient
         }
     }
 
-    private async Task CreateTree()
+    private async Task CreateTree(int count)
     {
-        _tree.Departments = new Collection<DepartmentTreeItem>(await CreateTree(null));
+        _tree.Departments = new Collection<DepartmentTreeItem>(await CreateTree(null, count));
     }
 
-    private async Task<List<DepartmentTreeItem>> CreateTree(int? id)
+    private async Task<List<DepartmentTreeItem>> CreateTree(int? id, int employeesCount)
     {
         var queryableDepartment = (await _departmentRepository.GetQueryableAsync())
             .OrderBy(x => x.Name);
@@ -147,9 +162,21 @@ public class ConsoleClient : IConsoleClient
             int directChildrenCount = queryableDepartment
                 .Count(x => x.ParentDepartmentId == item.Id);
 
-            var employees = employeeQueryable.Where(x => x.DepartmentId == item.Id)
-                .Select(x => new EmployeeItem(x.Id, x.FullName))
-                .ToList();
+            List<EmployeeItem> employees = new List<EmployeeItem>();
+
+            if (employeesCount < 0)
+            {
+                employees = employeeQueryable.Where(x => x.DepartmentId == item.Id)
+                    .Select(x => new EmployeeItem(x.Id, x.FullName))
+                    .ToList();
+            }
+            else
+            {
+                employees = employeeQueryable.Where(x => x.DepartmentId == item.Id)
+                    .Select(x => new EmployeeItem(x.Id, x.FullName))
+                    .Take(employeesCount)
+                    .ToList();
+            }
 
             var child = new DepartmentTreeItem
             {
@@ -164,7 +191,7 @@ public class ConsoleClient : IConsoleClient
                 child.Employees.Remove(manager);
                 child.Manager = manager;
             }
-            var items = await CreateTree(child.Id);
+            var items = await CreateTree(child.Id, employeesCount);
             result.Add(child);
             child.Departments = new Collection<DepartmentTreeItem>(items);
         }
