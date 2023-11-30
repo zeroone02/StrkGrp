@@ -9,7 +9,8 @@ public class JobTitleRepository : IJobTitleRepository
     {
         _context = new StarkovDbContextFactory().CreateDbContext();
     }
-    public Task<bool> ContainsAsync(int id)
+
+    public Task<bool> ContainsAsync(string name)
     {
         throw new NotImplementedException();
     }
@@ -20,6 +21,11 @@ public class JobTitleRepository : IJobTitleRepository
     }
 
     public Task<JobTitle> GetAsync(string name)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<JobTitle>> GetListAsync()
     {
         throw new NotImplementedException();
     }

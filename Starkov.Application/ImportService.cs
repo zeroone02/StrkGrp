@@ -27,6 +27,7 @@ public class ImportService
         {
             ImportType.Department => await ImportDepartmentsAsync(path),
             ImportType.Employee => await ImportEmployeeAsync(path),
+            ImportType.JobTitle => await ImportEmployeeTitleAsync(path),
             _ => throw new ArgumentException("Неизвестный тип импорта")
         };
     }
@@ -143,6 +144,22 @@ public class ImportService
 
     private async Task<TsvImportResult> ImportEmployeeTitleAsync(string path)
     {
+        var toAdd = new List<JobTitle>();
+        await foreach (var item in _tsvReader.ReadTsvAsJobTitleAsync(path))
+        {
+            if(!await _titleRepository.ContainsAsync(item.Name))
+            {
+                toAdd.Add(new JobTitle
+                {
+                    Name = item.Name
+                });
+            }
+        }
 
+        return new TsvImportResult
+        {
+            AddedCount = toAdd.Count,
+            TotalCount = toAdd.Count
+        };
     }
 }

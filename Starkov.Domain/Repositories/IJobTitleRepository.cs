@@ -5,4 +5,6 @@ public interface IJobTitleRepository
     Task<JobTitle> GetAsync(string name);
     Task InsertRange(IEnumerable<JobTitle> items);
     Task UpdateRange(IEnumerable<JobTitle> items);
+    Task<List<JobTitle>> GetListAsync();
+    Task<bool> ContainsAsync(string name);
 }
