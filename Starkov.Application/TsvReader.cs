@@ -18,7 +18,7 @@ public sealed class TsvReader
             count++;
             string line = await reader.ReadLineAsync();
             string[] data = line.Split('\t');
-            if (IsLengthIncorrectOrEmpty(data, dataLength))
+            if (!IsLengthIncorrectOrEmpty(data, dataLength))
             {
                 Console.WriteLine($"{Path.GetFileName(path)}: сломанные данные, строка: {count}");
                 continue;
@@ -50,7 +50,7 @@ public sealed class TsvReader
             count++;
             string line = await reader.ReadLineAsync();
             string[] data = line.Split('\t');
-            if (IsLengthIncorrectOrEmpty(data, dataLength))
+            if (!IsLengthIncorrectOrEmpty(data, dataLength))
             {
                 Console.WriteLine($"{Path.GetFileName(path)}: сломанные данные, строка: {count}");
                 continue;
@@ -84,7 +84,7 @@ public sealed class TsvReader
             count++;
             string line = await reader.ReadLineAsync();
             string[] data = line.Split('\t');
-            if (IsLengthIncorrectOrEmpty(data, dataLength))
+            if (!IsLengthIncorrectOrEmpty(data, dataLength))
             {
                 Console.WriteLine($"{Path.GetFileName(path)}: сломанные данные, строка: {count}");
                 continue;

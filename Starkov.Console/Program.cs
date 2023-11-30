@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Starkov.Application;
+using Starkov.Application.Clients;
 using Starkov.Application.Interfaces;
 using Starkov.Domain.Repositories;
 using Starkov.EFCore;
@@ -37,12 +38,15 @@ public class Program
 
         IServiceCollection services = new ServiceCollection();
 
-        services.AddDbContext<StarkovDbContext>();
+        services.AddDbContext<StarkovDbContext>(cfg =>
+        {
+            cfg.UseNpgsql(config.GetConnectionString("DefaultConnection"));
+        });
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IJobTitleRepository, JobTitleRepository>();
         services.AddTransient<ImportService>();
-        services.AddTransient<IConsoleClient, IConsoleClient>();
+        services.AddTransient<IConsoleClient, ConsoleClient>();
 
         return services.BuildServiceProvider();
     }

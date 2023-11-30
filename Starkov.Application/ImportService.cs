@@ -72,10 +72,22 @@ public class ImportService
             else
             {
                 data.Manager = await _employeeRepository.GetAsync(item.ManagerFullName);
-                employees.Add(data.Manager.FullName, data.Manager);
+                if (data.Manager != null)
+                {
+                    employees.Add(data.Manager.FullName, data.Manager);
+                }
             }
 
             departments.Add(item.Name, data);
+        }
+
+        if(toAdd.Any())
+        {
+            await _departmentRepository.InsertRangeAsync(toAdd);
+        }
+        if(toUpdate.Any())
+        {
+            await _departmentRepository.UpdateRangeAsync(toAdd);
         }
 
         return new TsvImportResult
@@ -147,7 +159,7 @@ public class ImportService
         var toAdd = new List<JobTitle>();
         await foreach (var item in _tsvReader.ReadTsvAsJobTitleAsync(path))
         {
-            if(!await _titleRepository.ContainsAsync(item.Name))
+            if (!await _titleRepository.ContainsAsync(item.Name))
             {
                 toAdd.Add(new JobTitle
                 {
