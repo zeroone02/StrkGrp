@@ -19,7 +19,26 @@ public class StarkovDbContext : DbContext
 
         modelBuilder.Entity<Department>(cfg =>
         {
-            cfg.HasKey(x => x.Id);
+            cfg.ToTable("Departments");
+            cfg.HasOne(x => x.ParentDepartment)
+               .WithMany()
+               .HasForeignKey(x => x.ParentDepartmentId);
+
+            cfg.HasOne(x => x.Manager)
+               .WithMany();
+        });
+
+        modelBuilder.Entity<Employee>(cfg =>
+        {
+            cfg.ToTable("Employees");
+            cfg.HasOne(x => x.JobTitle)
+               .WithMany()
+               .HasForeignKey(x => x.JobTitleId);
+        });
+
+        modelBuilder.Entity<JobTitle>(cfg =>
+        {
+            cfg.ToTable("JobTitles");
         });
     }
 }

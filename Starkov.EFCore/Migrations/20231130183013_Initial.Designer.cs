@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Starkov.EFCore;
@@ -11,9 +12,10 @@ using Starkov.EFCore;
 namespace Starkov.EFCore.Migrations
 {
     [DbContext(typeof(StarkovDbContext))]
-    partial class StarkovDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231130183013_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,6 +40,7 @@ namespace Starkov.EFCore.Migrations
                         .HasColumnType("text");
 
                     b.Property<int?>("ParentDepartmentId")
+                        .IsRequired()
                         .HasColumnType("integer");
 
                     b.Property<string>("PhoneNumber")
@@ -113,7 +116,9 @@ namespace Starkov.EFCore.Migrations
 
                     b.HasOne("Starkov.Domain.Department", "ParentDepartment")
                         .WithMany()
-                        .HasForeignKey("ParentDepartmentId");
+                        .HasForeignKey("ParentDepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Manager");
 

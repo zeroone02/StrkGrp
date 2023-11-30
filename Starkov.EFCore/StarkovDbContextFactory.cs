@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
 namespace Starkov.EFCore;
-public class StarkovDbContextFactory : IDbContextFactory<StarkovDbContext>
+public class StarkovDbContextFactory : IDesignTimeDbContextFactory<StarkovDbContext>
 {
-    public StarkovDbContext CreateDbContext()
+    public StarkovDbContext CreateDbContext(string[] args = default)
     {
         var builder = new DbContextOptionsBuilder<StarkovDbContext>()
             .UseNpgsql(GetConnectionStringFromConfiguration());
@@ -26,7 +27,7 @@ public class StarkovDbContextFactory : IDbContextFactory<StarkovDbContext>
             .SetBasePath(
                 Path.Combine(
                     Directory.GetCurrentDirectory(),
-                    $"..\\Starkov.Console"
+                    $"..{Path.DirectorySeparatorChar}Starkov.Console"
                 )
             )
             .AddJsonFile("appsettings.json", optional: false);

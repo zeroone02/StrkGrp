@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Starkov.EFCore;
@@ -11,9 +12,10 @@ using Starkov.EFCore;
 namespace Starkov.EFCore.Migrations
 {
     [DbContext(typeof(StarkovDbContext))]
-    partial class StarkovDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231130183418_AddManagerNullable")]
+    partial class AddManagerNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
