@@ -7,5 +7,6 @@ public class Department
     public Department ParentDepartment { get; set; }
     public int? ManagerId { get; set; }
     public Employee Manager { get; set; }
+    public string PhoneNumber { get; set; }
 }
 

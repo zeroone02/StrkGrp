@@ -1,11 +1,14 @@
-﻿namespace Starkov.Application.Common;
+﻿using Starkov.Application.Dtos;
+using System.Data;
+
+namespace Starkov.Application.Common;
 public sealed class Reader
 {
-    public async Task<IEnumerable<string[]>> ReadTsvAsDepartmentAsync(string path)
+    public async Task<IEnumerable<ReaderDepartmentViewModel>> ReadTsvAsDepartmentAsync(string path)
     {
         ThrowIfFileIncorrect(path);
 
-        var result = new List<string[]>();
+        var result = new List<ReaderDepartmentViewModel>();
         const int dataLength = 4;
 
         using var reader = new StreamReader(path);
@@ -15,22 +18,26 @@ public sealed class Reader
         {
             string line = await reader.ReadLineAsync();
             string[] data = line.Split('\t');
-            if (IsFileLineCorrect(data, dataLength))
+            if (IsLengthIncorrectOrEmpty(data, dataLength))
             {
                 continue;
             }
 
-            result.Add(data);
+            data[]
+
+            result.Add(new ReaderDepartmentViewModel
+            {
+            });
         }
 
         return result;
     }
 
-    public async Task<IEnumerable<string[]>> ReadTsvAsEmployeeAsync(string path)
+    public async Task<IEnumerable<ReaderEmployeeViewModel>> ReadTsvAsEmployeeAsync(string path)
     {
         ThrowIfFileIncorrect(path);
 
-        var result = new List<string[]>();
+        var result = new List<ReaderEmployeeViewModel>();
         const int dataLength = 5;
 
         using var reader = new StreamReader(path);
@@ -40,22 +47,28 @@ public sealed class Reader
         {
             string line = await reader.ReadLineAsync();
             string[] data = line.Split('\t');
-            if (IsFileLineCorrect(data, dataLength))
+            if (IsLengthIncorrectOrEmpty(data, dataLength))
             {
                 continue;
             }
 
-            result.Add(data);
+            data[3] = data[3].NormalizePhoneNumber();
+            TrimEmptyData(data);
+
+            result.Add(new ReaderEmployeeViewModel
+            {
+                
+            });
         }
 
         return result;
     }
 
-    public async Task<IEnumerable<string[]>> ReadTsvAsJobTitleAsync(string path)
+    public async Task<IEnumerable<ReaderJobTitleViewModel>> ReadTsvAsJobTitleAsync(string path)
     {
         ThrowIfFileIncorrect(path);
 
-        var result = new List<string[]>();
+        var result = new List<ReaderJobTitleViewModel>();
         const int dataLength = 2;
 
         using var reader = new StreamReader(path);
@@ -65,12 +78,12 @@ public sealed class Reader
         {
             string line = await reader.ReadLineAsync();
             string[] data = line.Split('\t');
-            if (IsFileLineCorrect(data, dataLength))
+            if (IsLengthIncorrectOrEmpty(data, dataLength))
             {
                 continue;
             }
 
-            result.Add(data);
+            result.Add();
         }
 
         return result;
@@ -88,8 +101,16 @@ public sealed class Reader
         }
     }
 
-    private bool IsFileLineCorrect(string[] data, int length)
+    private bool IsLengthIncorrectOrEmpty(string[] data, int length)
     {
         return data.Length == length && !data.All(x => string.IsNullOrEmpty(x) || string.IsNullOrWhiteSpace(x));
+    }
+
+    private void TrimEmptyData(string[] data)
+    {
+        for (int i = 0; i < data.Length; i++)
+        {
+            data[i] = data[i].TrimEmptyEntries();
+        }
     }
 }

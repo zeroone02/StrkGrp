@@ -1,4 +1,4 @@
 ﻿namespace Starkov.EFCore.Repositories;
-public class JobTitleRepository
+public class EmployeeRepository
 {
 }
