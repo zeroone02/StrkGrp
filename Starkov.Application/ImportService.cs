@@ -41,33 +41,40 @@ public class ImportService
 
         await foreach (var item in _tsvReader.ReadTsvAsDepartmentAsync(path))
         {
-            var department = await _departmentRepository.GetAsync(item.Name, item.ParentDepartment);
-            if (department != null)
+            var data = await _departmentRepository.GetAsync(item.Name, item.ParentDepartment);
+
+            if (data == null)
             {
-                var manager = await _employeeRepository.GetAsync(item.ManagerFullName);
-                var data = new Department
+                data = new Department
                 {
                     Name = item.Name,
                     PhoneNumber = item.Phone,
                 };
-
-                if(departments.ContainsKey(item.ParentDepartment))
-                {
-                    data.ParentDepartment = departments[item.ParentDepartment];
-                }
-
-                if (employees.ContainsKey(item.ManagerFullName))
-                {
-                    data.Manager = employees[item.ManagerFullName];
-                }
-                else
-                {
-                    data.Manager = await _employeeRepository.GetAsync(item.ManagerFullName);
-                }
-
                 toAdd.Add(data);
-                departments.Add(item.Name, data);
             }
+            else
+            {
+                data.Name = item.Name;
+                data.PhoneNumber = item.Phone;
+                toUpdate.Add(data);
+            }
+
+            if (departments.ContainsKey(item.ParentDepartment))
+            {
+                data.ParentDepartment = departments[item.ParentDepartment];
+            }
+
+            if (employees.ContainsKey(item.ManagerFullName))
+            {
+                data.Manager = employees[item.ManagerFullName];
+            }
+            else
+            {
+                data.Manager = await _employeeRepository.GetAsync(item.ManagerFullName);
+                employees.Add(data.Manager.FullName, data.Manager);
+            }
+
+            departments.Add(item.Name, data);
         }
 
         return new TsvImportResult
@@ -87,28 +94,43 @@ public class ImportService
 
         await foreach (var item in _tsvReader.ReadTsvAsEmployeeAsync(path))
         {
-            var department = await _employeeRepository.GetAsync(item.FullName);
-            if (department != null)
+            var data = await _employeeRepository.GetAsync(item.FullName);
+            if (data == null)
             {
-                var data = new Employee
+                data = new Employee
                 {
                     FullName = item.FullName,
                     Login = item.Login,
                     PasswordHash = item.RawPassword.GenerateSHA256Hash()
                 };
-
-                if (jobTitlesMap.ContainsKey(item.JobTitle))
-                {
-                    data.JobTitle = jobTitlesMap[item.JobTitle];
-                }
-                else
-                {
-                    data.JobTitle = await _titleRepository.GetAsync(item.JobTitle);
-                }
-
                 toAdd.Add(data);
-                jobTitlesMap.Add(item.Name, data);
             }
+            else
+            {
+                data.Login = item.Login;
+                data.PasswordHash = item.RawPassword.GenerateSHA256Hash();
+                toUpdate.Add(data);
+            }
+
+            if (jobTitlesMap.ContainsKey(item.JobTitleName))
+            {
+                data.JobTitle = jobTitlesMap[item.JobTitleName];
+            }
+            else
+            {
+                data.JobTitle = await _titleRepository.GetAsync(item.JobTitleName);
+            }
+
+            jobTitlesMap.Add(item.JobTitleName, data.JobTitle);
+        }
+
+        if (toAdd.Count > 0)
+        {
+            await _employeeRepository.InsertRangeAsync(toAdd);
+        }
+        if (toUpdate.Count > 0)
+        {
+            await _employeeRepository.UpdateRangeAsync(toUpdate);
         }
 
         return new TsvImportResult
@@ -117,5 +139,10 @@ public class ImportService
             UpdatedCount = toUpdate.Count,
             TotalCount = toAdd.Count + toUpdate.Count,
         };
+    }
+
+    private async Task<TsvImportResult> ImportEmployeeTitleAsync(string path)
+    {
+
     }
 }

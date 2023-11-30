@@ -32,9 +32,8 @@ public sealed class TsvReader
                 ParentDepartment = data[1],
                 ManagerFullName = data[2],
                 Phone = data[3].NormalizePhoneNumber()
-            });
+            };
         }
-
     }
 
     public async IAsyncEnumerable<ReaderEmployeeViewModel> ReadTsvAsEmployeeAsync(string path)
@@ -65,7 +64,7 @@ public sealed class TsvReader
                 FullName = data[1],
                 Login = data[2],
                 RawPassword = data[3],
-                JobTitle = data[4],
+                JobTitleName = data[4],
             };
         }
     }

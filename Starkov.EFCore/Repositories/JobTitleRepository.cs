@@ -23,4 +23,14 @@ public class JobTitleRepository : IJobTitleRepository
     {
         throw new NotImplementedException();
     }
+
+    public Task InsertRange(IEnumerable<JobTitle> items)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task UpdateRange(IEnumerable<JobTitle> items)
+    {
+        throw new NotImplementedException();
+    }
 }
