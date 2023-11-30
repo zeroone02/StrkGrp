@@ -37,7 +37,7 @@ public class ConsoleClient : IConsoleClient
         {
             command = Console.ReadLine();
             var parsedCommand = ParseCommand(command);
-            await Invoke(parsedCommand.Item1, parsedCommand.Item2);
+            await ExecuteCommand(parsedCommand.Item1, parsedCommand.Item2);
         }
         while (command != "выход");
     }
@@ -54,7 +54,7 @@ public class ConsoleClient : IConsoleClient
         return (arr[0], options);
     }
 
-    private async Task Invoke(string command, KeyValuePair<string, string>[] args)
+    private async Task ExecuteCommand(string command, KeyValuePair<string, string>[] args)
     {
         if (!_availableCommands.Contains(command))
         {
