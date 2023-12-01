@@ -2,7 +2,6 @@
 using Starkov.Application.Dtos;
 using Starkov.Domain;
 using Starkov.Domain.Repositories;
-using System.Data;
 
 namespace Starkov.Application;
 public class ImportService
@@ -65,7 +64,8 @@ public class ImportService
             {
                 data.ParentDepartment = departments[item.ParentDepartment];
             }
-            else
+            
+            if(!departments.ContainsKey(item.Name))
             {
                 departments.Add(item.Name, data);
             }
@@ -133,23 +133,23 @@ public class ImportService
             {
                 data.JobTitle = jobTitlesMap[item.JobTitleName];
             }
-            else if(!string.IsNullOrEmpty(item.JobTitleName))
+            else if (!string.IsNullOrEmpty(item.JobTitleName))
             {
                 data.JobTitle = await _titleRepository.GetAsync(item.JobTitleName);
                 jobTitlesMap.Add(item.JobTitleName, data.JobTitle);
             }
 
-            if(departmentsDictionary.ContainsKey(item.DepartmentName))
+            if (departmentsDictionary.ContainsKey(item.DepartmentName))
             {
                 data.Department = departmentsDictionary[item.DepartmentName];
             }
-            else if(!string.IsNullOrEmpty(item.DepartmentName))
+            else if (!string.IsNullOrEmpty(item.DepartmentName))
             {
                 data.Department = await _departmentRepository.GetAsync(item.DepartmentName);
                 departmentsDictionary.Add(item.DepartmentName, data.Department);
             }
 
-            if(data.Department == null || data.JobTitle == null)
+            if (data.Department == null || data.JobTitle == null)
             {
                 toAdd.Remove(data);
                 toUpdate.Remove(data);
@@ -188,7 +188,7 @@ public class ImportService
             }
         }
 
-        if(toAdd.Any())
+        if (toAdd.Any())
         {
             await _titleRepository.InsertRange(toAdd);
         }

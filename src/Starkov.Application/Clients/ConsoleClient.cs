@@ -46,20 +46,31 @@ public class ConsoleClient : IConsoleClient
     private (string, KeyValuePair<string, string>[]) ParseCommand(string command)
     {
         var arr = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
+
         var options = arr
             .Skip(1)
-            .Chunk(2)
-            .Select(x => new KeyValuePair<string, string>(x[0], x[1]))
-            .ToArray();
+            .Chunk(2);
 
-        return (arr[0], options);
+        foreach (var option in options)
+        {
+            if (option.Length != 2)
+            {
+                continue;
+            }
+            result.Add(new KeyValuePair<string, string>(option[0], option[1]));
+        }
+
+        return (arr[0], result.ToArray());
     }
 
     private async Task ExecuteCommand(string command, KeyValuePair<string, string>[] args)
     {
         if (!_availableCommands.Contains(command))
         {
+            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("Неизвестная команда");
+            Console.ForegroundColor = ConsoleColor.White;
             return;
         }
 
@@ -80,6 +91,13 @@ public class ConsoleClient : IConsoleClient
             {
                 type = ImportType.JobTitle;
             }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Неверный синтаксис команды или значение параметров");
+                Console.ForegroundColor = ConsoleColor.White;
+                return;
+            }
 
             try
             {
@@ -88,14 +106,14 @@ public class ConsoleClient : IConsoleClient
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"Успешно импортировано ({result.TotalCount}): " +
-                        $"\n\tдобавлено:{result.AddedCount}" +
-                        $"\n\tобновлено{result.UpdatedCount}");
+                        $"\n\tдобавлено: {result.AddedCount}" +
+                        $"\n\tобновлено: {result.UpdatedCount}");
                     Console.ForegroundColor = ConsoleColor.White;
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("Warning: Не импортировано, возможно данные в файле некорректны или указан неверный тип");
+                    Console.WriteLine("Записи не были обновлены и не были добавлены (возможно такие данные уже существуют)");
                     Console.ForegroundColor = ConsoleColor.White;
                 }
             }
@@ -105,11 +123,11 @@ public class ConsoleClient : IConsoleClient
                 Console.WriteLine("Файл не найден");
                 Console.ForegroundColor = ConsoleColor.White;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Не удалось выполнить команду ({ex.GetType()}: {ex.Message})");
             }
-         
+
         }
         else if (command == "help")
         {
@@ -118,12 +136,19 @@ public class ConsoleClient : IConsoleClient
         else if (command == "expand")
         {
             var expand = args.FirstOrDefault(x => x.Key == "-c").Value;
+            if (expand == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Неверный синтаксис команды");
+                Console.ForegroundColor = ConsoleColor.White;
+                return;
+            }
             _employeesCount = Convert.ToInt32(expand);
         }
         else if (command == "output")
         {
             await CreateTree();
-            if(_tree.Departments.Any())
+            if (_tree.Departments.Any())
             {
                 Console.WriteLine();
                 await DrawTreeAsync(_tree.Departments, 0);

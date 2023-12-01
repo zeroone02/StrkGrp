@@ -15,7 +15,10 @@ public class DepartmentRepository : IDepartmentRepository
     {
         var item = await GetAsync(parentName);
         int? id = item?.Id;
-        return await _context.Departments.FirstOrDefaultAsync(x => x.Name == name && x.ParentDepartmentId == id);
+        return await _context.Departments
+            .Include(x => x.ParentDepartment)
+            .Include(x => x.Manager)
+            .FirstOrDefaultAsync(x => x.Name == name && x.ParentDepartmentId == id);
     }
 
     public async Task<IQueryable<Department>> GetQueryableAsync()
@@ -27,7 +30,10 @@ public class DepartmentRepository : IDepartmentRepository
 
     public Task<Department> GetAsync(int id)
     {
-        return _context.Departments.FirstOrDefaultAsync(x => x.Id == id);
+        return _context.Departments
+                .Include(x => x.ParentDepartment)
+                .Include(x => x.Manager)
+                .FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task InsertRangeAsync(IEnumerable<Department> items)
@@ -44,6 +50,9 @@ public class DepartmentRepository : IDepartmentRepository
 
     public Task<Department> GetAsync(string name)
     {
-        return _context.Departments.FirstOrDefaultAsync(x => x.Name == name);
+        return _context.Departments
+            .Include(x => x.ParentDepartment)
+            .Include(x => x.Manager)
+            .FirstOrDefaultAsync(x => x.Name == name);
     }
 }
