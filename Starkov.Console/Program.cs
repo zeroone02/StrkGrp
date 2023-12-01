@@ -16,8 +16,16 @@ public class Program
         try
         {
             var provider = ConfigureServices();
-            var servie = provider.GetRequiredService<IConsoleClient>();
-            await servie.RunAsync();
+            var service = provider.GetRequiredService<IConsoleClient>();
+
+            var context = provider.GetRequiredService<StarkovDbContext>();
+            if((await context.Database.GetPendingMigrationsAsync()).Any())
+            {
+                await context.Database.MigrateAsync();
+            }
+
+            await service.RunAsync();
+
             return 1;
         }
         catch (Exception ex)

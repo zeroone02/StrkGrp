@@ -13,7 +13,7 @@ public class ConsoleClient : IConsoleClient
     private OrganizationTree _tree;
 
     private int _employeesCount = 10;
-    private string[] _availableCommands = { "help", "import", "output", "details" };
+    private string[] _availableCommands = { "help", "import", "output", "expand" };
     public ConsoleClient(
         ImportService service,
         IDepartmentRepository departmentRepository,
@@ -35,6 +35,7 @@ public class ConsoleClient : IConsoleClient
         Help();
         do
         {
+            Console.Write("> ");
             command = Console.ReadLine();
             var parsedCommand = ParseCommand(command);
             await ExecuteCommand(parsedCommand.Item1, parsedCommand.Item2);
@@ -79,27 +80,59 @@ public class ConsoleClient : IConsoleClient
             {
                 type = ImportType.JobTitle;
             }
-            else
-            {
-                Console.WriteLine("Неизвестное значение для аргумента -t");
-            }
 
-            await _service.ImportTsvAsync(path, type);
+            try
+            {
+                var result = await _service.ImportTsvAsync(path, type);
+                if (result.TotalCount > 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Успешно импортировано ({result.TotalCount}): " +
+                        $"\n\tдобавлено:{result.AddedCount}" +
+                        $"\n\tобновлено{result.UpdatedCount}");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("Warning: Не импортировано, возможно данные в файле некорректны или указан неверный тип");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Файл не найден");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Не удалось выполнить команду ({ex.GetType()}: {ex.Message})");
+            }
+         
         }
         else if (command == "help")
         {
             Help();
         }
-        else if(command == "expand")
+        else if (command == "expand")
         {
-            _employeesCount = Convert.ToInt32(args[0]);
+            var expand = args.FirstOrDefault(x => x.Key == "-c").Value;
+            _employeesCount = Convert.ToInt32(expand);
         }
         else if (command == "output")
         {
             await CreateTree();
-            Console.WriteLine();
-            await DrawTreeAsync(_tree.Departments, 0);
-            Console.WriteLine();
+            if(_tree.Departments.Any())
+            {
+                Console.WriteLine();
+                await DrawTreeAsync(_tree.Departments, 0);
+                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine("Данные отсутствуют");
+            }
         }
     }
 
@@ -109,12 +142,11 @@ public class ConsoleClient : IConsoleClient
         Console.WriteLine("Доступные команды:");
         Console.WriteLine("1) help");
         Console.WriteLine("2) import -p <path> -t <type> - импорт файла в БД" +
-            "\n\t <path> - полный путь до tsv файла" +
-            "\n\t <type> - тип импорта (d - отделы, e - сотрудники, j - должности)");
-        Console.WriteLine("3) output -c <count> - вывод данных на экран" +
-            "\n\t <count> - натуральное число, количество элементов для вывода на каждом уровне");
-        Console.WriteLine("4) expand <count> - установка максимального количества сотрудников для вывода" +
-            "\n\t <count> - число, количество сотрудников (-1 для вывода всех, по умолчанию 10)");
+            "\n\t -p <path> - полный путь до tsv файла" +
+            "\n\t -t <type> - тип импорта (d - отделы, e - сотрудники, j - должности)");
+        Console.WriteLine("3) output - вывод данных на экран");
+        Console.WriteLine("4) expand -c <count> - установка максимального количества сотрудников для вывода" +
+            "\n\t -c <count> - число, количество сотрудников (-1 для вывода всех, по умолчанию 10)");
         Console.WriteLine();
     }
 
