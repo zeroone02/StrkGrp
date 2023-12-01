@@ -10,8 +10,8 @@ public class ConsoleClient : IConsoleClient
     private readonly ImportService _service;
     private readonly IDepartmentRepository _departmentRepository;
     private readonly IEmployeeRepository _employeeRepository;
-    private OrganizationTree _tree;
 
+    private OrganizationTree _tree;
     private int _employeesCount = 10;
     private string[] _availableCommands = { "help", "import", "output", "expand" };
     public ConsoleClient(
