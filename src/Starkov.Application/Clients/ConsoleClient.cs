@@ -12,7 +12,7 @@ public class ConsoleClient : IConsoleClient
     private readonly IEmployeeRepository _employeeRepository;
 
     private OrganizationTree _tree;
-    private int _employeesCount = 10;
+    private int _maxCount = 10;
     private string[] _availableCommands = { "help", "import", "output", "expand" };
     public ConsoleClient(
         ImportService service,
@@ -143,7 +143,13 @@ public class ConsoleClient : IConsoleClient
                 Console.ForegroundColor = ConsoleColor.White;
                 return;
             }
-            _employeesCount = Convert.ToInt32(expand);
+            _maxCount = Convert.ToInt32(expand);
+            if(_maxCount < 0 || _maxCount > 40)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Warning: вывод может быть медленным!");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
         }
         else if (command == "output")
         {
@@ -157,6 +163,7 @@ public class ConsoleClient : IConsoleClient
                 else
                 {
                     Console.WriteLine("Переданный идентификатор не число");
+                    return;
                 }
             }
             else
@@ -166,7 +173,7 @@ public class ConsoleClient : IConsoleClient
             if (_tree.Departments.Any())
             {
                 Console.WriteLine();
-                await DrawTreeAsync(_tree.Departments, 0);
+                await DrawTreeAsync(_tree.Departments, 1);
                 Console.WriteLine();
             }
             else
@@ -186,8 +193,8 @@ public class ConsoleClient : IConsoleClient
             "\n\t -t <type> - тип импорта (d - отделы, e - сотрудники, j - должности)");
         Console.WriteLine("3) output -id <id> - вывод данных на экран" +
             "\n\t-id <id> - опциональный параметр, идентификатор отдела");
-        Console.WriteLine("4) expand -c <count> - установка максимального количества сотрудников для вывода" +
-            "\n\t -c <count> - число, количество сотрудников (-1 для вывода всех, по умолчанию 10)");
+        Console.WriteLine("4) expand -c <count> - установка максимального количества элементов для вывода на уровне" +
+            "\n\t -c <count> - число, макс. количество отделов и работников для уровняы, по умолчанию 10, значение -1 - вывод всех.");
         Console.WriteLine();
     }
 
@@ -195,14 +202,20 @@ public class ConsoleClient : IConsoleClient
     {
         foreach (var item in items)
         {
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine($"{new string('=', depth)}{item.Name} ({item.Id})");
+            Console.ForegroundColor = ConsoleColor.White;
             if (item.Manager != null)
             {
+                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine($"{new string(' ', depth)}*{item.Manager.FullName}");
+                Console.ForegroundColor = ConsoleColor.White;
             }
             foreach (var employee in item.Employees)
             {
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"{new string(' ', depth)}-{employee.FullName}");
+                Console.ForegroundColor = ConsoleColor.White;
             }
             await DrawTreeAsync(item.Departments, depth + 1);
         }
@@ -210,7 +223,7 @@ public class ConsoleClient : IConsoleClient
 
     private async Task CreateTree(int? id)
     {
-        _tree.Departments = new Collection<DepartmentTreeItem>(await CreateTree(id, _employeesCount, false));
+        _tree.Departments = new Collection<DepartmentTreeItem>(await CreateTree(id, _maxCount, false));
     }
 
     //nested - костыль для того чтобы не уйти в беск цикл
@@ -225,7 +238,7 @@ public class ConsoleClient : IConsoleClient
 
         List<Department> list = new List<Department>();
 
-        if(id != null && !nested)
+        if (id != null && !nested)
         {
             list = queryableDepartment
                 .Where(x => x.Id == id)
