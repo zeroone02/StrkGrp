@@ -147,7 +147,22 @@ public class ConsoleClient : IConsoleClient
         }
         else if (command == "output")
         {
-            await CreateTree();
+            if (args.Any())
+            {
+                var option = args.FirstOrDefault(x => x.Key == "-id").Value;
+                if (int.TryParse(option, out int id))
+                {
+                    await CreateTree(id);
+                }
+                else
+                {
+                    Console.WriteLine("Переданный идентификатор не число");
+                }
+            }
+            else
+            {
+                await CreateTree(null);
+            }
             if (_tree.Departments.Any())
             {
                 Console.WriteLine();
@@ -169,7 +184,8 @@ public class ConsoleClient : IConsoleClient
         Console.WriteLine("2) import -p <path> -t <type> - импорт файла в БД" +
             "\n\t -p <path> - полный путь до tsv файла" +
             "\n\t -t <type> - тип импорта (d - отделы, e - сотрудники, j - должности)");
-        Console.WriteLine("3) output - вывод данных на экран");
+        Console.WriteLine("3) output -id <id> - вывод данных на экран" +
+            "\n\t-id <id> - опциональный параметр, идентификатор отдела");
         Console.WriteLine("4) expand -c <count> - установка максимального количества сотрудников для вывода" +
             "\n\t -c <count> - число, количество сотрудников (-1 для вывода всех, по умолчанию 10)");
         Console.WriteLine();
@@ -192,12 +208,14 @@ public class ConsoleClient : IConsoleClient
         }
     }
 
-    private async Task CreateTree()
+    private async Task CreateTree(int? id)
     {
-        _tree.Departments = new Collection<DepartmentTreeItem>(await CreateTree(null, _employeesCount));
+        _tree.Departments = new Collection<DepartmentTreeItem>(await CreateTree(id, _employeesCount, false));
     }
 
-    private async Task<List<DepartmentTreeItem>> CreateTree(int? id, int employeesCount)
+    //nested - костыль для того чтобы не уйти в беск цикл
+    //если true - то надо доставать по parentId, иначе по id.
+    private async Task<List<DepartmentTreeItem>> CreateTree(int? id, int employeesCount, bool nested)
     {
         var queryableDepartment = (await _departmentRepository.GetQueryableAsync())
             .OrderBy(x => x.Name);
@@ -205,9 +223,20 @@ public class ConsoleClient : IConsoleClient
         var employeeQueryable = (await _employeeRepository.GetQueryableAsync())
             .OrderBy(x => x.FullName);
 
-        var list = queryableDepartment
-            .Where(x => x.ParentDepartmentId == id)
-            .ToList();
+        List<Department> list = new List<Department>();
+
+        if(id != null && !nested)
+        {
+            list = queryableDepartment
+                .Where(x => x.Id == id)
+                .ToList();
+        }
+        else
+        {
+            list = queryableDepartment
+                .Where(x => x.ParentDepartmentId == id)
+                .ToList();
+        }
 
         List<DepartmentTreeItem> result = new List<DepartmentTreeItem>();
         foreach (var item in list)
@@ -244,7 +273,7 @@ public class ConsoleClient : IConsoleClient
                 child.Employees.Remove(manager);
                 child.Manager = manager;
             }
-            var items = await CreateTree(child.Id, employeesCount);
+            var items = await CreateTree(child.Id, employeesCount, true);
             result.Add(child);
             child.Departments = new Collection<DepartmentTreeItem>(items);
         }
