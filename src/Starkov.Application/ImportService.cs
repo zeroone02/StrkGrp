@@ -42,6 +42,10 @@ public class ImportService
 
         await foreach (var item in _tsvReader.ReadTsvAsDepartmentAsync(path))
         {
+            char s = char.ToUpper(item.Name[0]);
+            item.Name = item.Name.ToLower().Remove(0, 1);
+            item.Name = s + item.Name;
+
             var data = await _departmentRepository.GetAsync(item.Name, item.ParentDepartment);
 
             if (data == null)
@@ -111,6 +115,14 @@ public class ImportService
 
         await foreach (var item in _tsvReader.ReadTsvAsEmployeeAsync(path))
         {
+            item.FullName = string.Join(' ',
+                item.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select((x) =>
+                {
+                    x = x.ToLower();
+                    char s = char.ToUpper(x[0]);
+                    x = x.Remove(0, 1);
+                    return s + x;
+                }));
             var data = await _employeeRepository.GetAsync(item.FullName);
             if (data == null)
             {
