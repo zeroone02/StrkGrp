@@ -144,7 +144,7 @@ public class ConsoleClient : IConsoleClient
                 return;
             }
             _maxCount = Convert.ToInt32(expand);
-            if(_maxCount < 0 || _maxCount > 40)
+            if(_maxCount < 0 || _maxCount > 20)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("Warning: вывод может быть медленным!");
