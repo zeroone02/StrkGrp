@@ -203,7 +203,7 @@ public class ConsoleClient : IConsoleClient
         foreach (var item in items)
         {
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine($"{new string('=', depth)}{item.Name} ({item.Id})");
+            Console.WriteLine($"{new string('=', depth)}{item.Name} ({item.Id}), подразделов: {item.DirectChildrenCount}");
             Console.ForegroundColor = ConsoleColor.White;
             if (item.Manager != null)
             {
@@ -228,7 +228,7 @@ public class ConsoleClient : IConsoleClient
 
     //nested - костыль для того чтобы не уйти в беск цикл
     //если true - то надо доставать по parentId, иначе по id.
-    private async Task<List<DepartmentTreeItem>> CreateTree(int? id, int employeesCount, bool nested)
+    private async Task<List<DepartmentTreeItem>> CreateTree(int? id, int maxCount, bool nested)
     {
         var queryableDepartment = (await _departmentRepository.GetQueryableAsync())
             .OrderBy(x => x.Name);
@@ -242,12 +242,14 @@ public class ConsoleClient : IConsoleClient
         {
             list = queryableDepartment
                 .Where(x => x.Id == id)
+                .Take(maxCount)
                 .ToList();
         }
         else
         {
             list = queryableDepartment
                 .Where(x => x.ParentDepartmentId == id)
+                .Take(maxCount)
                 .ToList();
         }
 
@@ -259,7 +261,7 @@ public class ConsoleClient : IConsoleClient
 
             List<EmployeeItem> employees = new List<EmployeeItem>();
 
-            if (employeesCount < 0)
+            if (maxCount < 0)
             {
                 employees = employeeQueryable.Where(x => x.DepartmentId == item.Id)
                     .Select(x => new EmployeeItem(x.Id, x.FullName))
@@ -269,7 +271,7 @@ public class ConsoleClient : IConsoleClient
             {
                 employees = employeeQueryable.Where(x => x.DepartmentId == item.Id)
                     .Select(x => new EmployeeItem(x.Id, x.FullName))
-                    .Take(employeesCount)
+                    .Take(maxCount)
                     .ToList();
             }
 
@@ -286,7 +288,7 @@ public class ConsoleClient : IConsoleClient
                 child.Employees.Remove(manager);
                 child.Manager = manager;
             }
-            var items = await CreateTree(child.Id, employeesCount, true);
+            var items = await CreateTree(child.Id, maxCount, true);
             result.Add(child);
             child.Departments = new Collection<DepartmentTreeItem>(items);
         }
