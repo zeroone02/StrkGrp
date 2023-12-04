@@ -71,7 +71,8 @@ public class ConsoleClient : IConsoleClient
 
                 if (CheckOutputParameters(parameters, out int? id))
                 {
-                    _tree.Departments = await CreateTreeAsync(id);
+                    var departments = (await _departmentRepository.GetQueryableAsync()).OrderBy(x => x.Name).ToList();
+                    _tree.Departments = await CreateTreeAsync(id.Value);
 
                     var main = await _departmentRepository.GetAsync(id.Value);
                     if (main == null)
@@ -170,18 +171,15 @@ public class ConsoleClient : IConsoleClient
         }
     }
 
-    private async Task<List<DepartmentTreeItem>> CreateTreeAsync(int? id)
+    private async Task<List<DepartmentTreeItem>> CreateTreeAsync(int? id, List<Department> initialDepartments, List<Employee> initialEmployees)
     {
-        var queryableDepartment = (await _departmentRepository.GetQueryableAsync()).OrderBy(x => x.Name);
-        var employeeQueryable = (await _employeeRepository.GetQueryableAsync()).OrderBy(x => x.FullName);
-
-        var parents = queryableDepartment.Where(x => x.ParentDepartmentId == id).ToList();
+        var parents = initialDepartments.Where(x => x.ParentDepartmentId == id);
 
         List<DepartmentTreeItem> result = new List<DepartmentTreeItem>();
 
         foreach (var parent in parents)
         {
-            var employees = employeeQueryable.Where(x => x.DepartmentId == parent.Id).ToList();
+            var employees = initialEmployees.Where(x => x.DepartmentId == parent.Id);
             var employeeItems = employees.Select(x => new EmployeeItem(x.Id, x.FullName)).ToList();
 
             var manager = employeeItems.FirstOrDefault(x => x.Id == parent.ManagerId);
@@ -193,7 +191,7 @@ public class ConsoleClient : IConsoleClient
             {
                 Id = parent.Id,
                 Name = parent.Name,
-                Departments = await CreateTreeAsync(parent.Id),
+                Departments = await CreateTreeAsync(parent.Id, initialDepartments, initialEmployees),
                 Employees = employeeItems,
                 Manager = manager
             };

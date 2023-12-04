@@ -15,6 +15,7 @@ public class Program
     {
         try
         {
+            args = "output -id 44".Split(' ').ToArray();
             var provider = ConfigureServices();
             var service = provider.GetRequiredService<IConsoleClient>();
 

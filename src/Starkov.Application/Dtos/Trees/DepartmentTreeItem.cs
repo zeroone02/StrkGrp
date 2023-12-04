@@ -8,4 +8,5 @@ public class DepartmentTreeItem
     public EmployeeItem Manager { get; set; }
     public IEnumerable<DepartmentTreeItem> Departments { get; set; }
     public IEnumerable<EmployeeItem> Employees { get; set; }
+    public int? ParentDepartmentId { get; set; }
 }
