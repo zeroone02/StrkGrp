@@ -73,12 +73,25 @@ public class ConsoleClient : IConsoleClient
                 {
                     _tree.Departments = await CreateTreeAsync(id);
                     var main = await _departmentRepository.GetAsync(id.Value);
-                    if(main == null)
+                    if (main == null)
                     {
                         WriteLine("Отдел не найден", ConsoleColor.Yellow);
                         return;
                     }
-                    WriteLine($"={main.Name} ({main.Id})\"", ConsoleColor.DarkYellow);
+                    WriteLine($"={main.Name} ({main.Id})", ConsoleColor.DarkYellow);
+                    if (main.Manager != null)
+                    {
+                        WriteLine($"*{main.Manager.FullName}", ConsoleColor.Magenta);
+                    }
+
+                    var employees = (await _employeeRepository.GetQueryableAsync())
+                        .Where(x => x.DepartmentId == main.Id)
+                        .ToList();
+                    employees.Remove(main.Manager);
+                    foreach (var employee in employees)
+                    {
+                        WriteLine($"-{employee.FullName}", ConsoleColor.Yellow);
+                    }
                     await DrawTreeAsync(_tree.Departments, 2);
                 }
             }
@@ -167,7 +180,7 @@ public class ConsoleClient : IConsoleClient
             var employeeItems = employees.Select(x => new EmployeeItem(x.Id, x.FullName)).ToList();
 
             var manager = employeeItems.FirstOrDefault(x => x.Id == parent.ManagerId);
-            if(manager != null)
+            if (manager != null)
             {
                 employeeItems.Remove(manager);
             }
