@@ -61,24 +61,30 @@ public class ConsoleClient : IConsoleClient
             var prepeare = args.Skip(1).Chunk(2);
             if (prepeare.Count() == 0)
             {
-                await CreateTreeAsync(null);
+                WriteLine("Все отделы:", ConsoleColor.DarkYellow);
+                _tree.Departments = new(await CreateTreeAsync(null));
                 await DrawTreeAsync(_tree.Departments, 1);
             }
-            else if(prepeare.Count() == 1)
+            else if (prepeare.Count() == 1)
             {
                 var parameters = prepeare.Select(x => new KeyValuePair<string, string>(x[0], x[1]));
 
                 if (CheckOutputParameters(parameters, out int? id))
                 {
-                    await CreateTreeAsync(id);
-                    await DrawTreeAsync(_tree.Departments, 1);
+                    _tree.Departments = new Collection<DepartmentTreeItem>(await CreateTreeAsync(id));
+                    var main = await _departmentRepository.GetAsync(id.Value);
+                    if(main == null)
+                    {
+                        WriteLine("Отдел не найден", ConsoleColor.Yellow);
+                    }
+                    WriteLine($"={main.Name} ({main.Id})\"", ConsoleColor.DarkYellow);
+                    await DrawTreeAsync(_tree.Departments, 2);
                 }
             }
             else
             {
                 WriteLine("Неверные аргументы для команды output", ConsoleColor.Red);
             }
-
         }
     }
 
@@ -97,7 +103,7 @@ public class ConsoleClient : IConsoleClient
     private bool CheckImportParameters(IEnumerable<KeyValuePair<string, string>> parameters, out string type, out string path)
     {
         const string availableTParamValues = "dej";
-        
+
         type = parameters.FirstOrDefault(x => x.Key == "-t").Value;
         path = parameters.FirstOrDefault(x => x.Key == "-p").Value;
 
@@ -131,7 +137,7 @@ public class ConsoleClient : IConsoleClient
     {
         foreach (var item in items)
         {
-            WriteLine($"{new string('=', depth)}{item.Name} ({item.Id}), подразделов: {item.DirectChildrenCount}", ConsoleColor.DarkGreen);
+            WriteLine($"{new string('=', depth)}{item.Name} ({item.Id})", ConsoleColor.DarkGreen);
 
             if (item.Manager != null)
             {
@@ -145,68 +151,35 @@ public class ConsoleClient : IConsoleClient
         }
     }
 
-    private async Task CreateTreeAsync(int? id)
+    private async Task<List<DepartmentTreeItem>> CreateTreeAsync(int? id)
     {
-        _tree.Departments = new Collection<DepartmentTreeItem>(await CreateTreeAsync(id, false));
-    }
+        var queryableDepartment = (await _departmentRepository.GetQueryableAsync()).OrderBy(x => x.Name);
+        var employeeQueryable = (await _employeeRepository.GetQueryableAsync()).OrderBy(x => x.FullName);
 
-    //nested - костыль для того чтобы не уйти в беск цикл
-    //если true - то надо доставать по parentId, иначе по id.
-    private async Task<List<DepartmentTreeItem>> CreateTreeAsync(int? id, bool nested)
-    {
-        var queryableDepartment = (await _departmentRepository.GetQueryableAsync())
-            .OrderBy(x => x.Name);
-
-        var employeeQueryable = (await _employeeRepository.GetQueryableAsync())
-            .OrderBy(x => x.FullName);
-
-        List<Department> list = new List<Department>();
-
-        if (id != null && !nested)
-        {
-            list = queryableDepartment
-                .Where(x => x.Id == id)
-                .ToList();
-        }
-        else
-        {
-            list = queryableDepartment
-                .Where(x => x.ParentDepartmentId == id)
-                .ToList();
-        }
+        var parents = queryableDepartment.Where(x => x.ParentDepartmentId == id).ToList();
 
         List<DepartmentTreeItem> result = new List<DepartmentTreeItem>();
-        foreach (var item in list)
+
+        foreach (var parent in parents)
         {
-            int directChildrenCount = queryableDepartment
-                .Count(x => x.ParentDepartmentId == item.Id);
+            var employees = employeeQueryable.Where(x => x.DepartmentId == parent.Id).ToList();
+            var employeeItems = employees.Select(x => new EmployeeItem(x.Id, x.FullName)).ToList();
 
-            List<EmployeeItem> employees = new List<EmployeeItem>();
-
-
-            employees = employeeQueryable.Where(x => x.DepartmentId == item.Id)
-                .Select(x => new EmployeeItem(x.Id, x.FullName))
-                .ToList();
-
-
-            var child = new DepartmentTreeItem
+            var manager = employeeItems.FirstOrDefault(x => x.Id == parent.ManagerId);
+            if(manager != null)
             {
-                Id = item.Id,
-                Name = item.Name,
-                DirectChildrenCount = directChildrenCount,
-                Employees = new Collection<EmployeeItem>(employees)
-            };
-            var manager = child.Employees.FirstOrDefault(x => x.Id == item.ManagerId);
-            if (manager != null)
-            {
-                child.Employees.Remove(manager);
-                child.Manager = manager;
+                employeeItems.Remove(manager);
             }
-            var items = await CreateTreeAsync(child.Id, true);
-            result.Add(child);
-            child.Departments = new Collection<DepartmentTreeItem>(items);
+            var departmentItem = new DepartmentTreeItem
+            {
+                Id = parent.Id,
+                Name = parent.Name,
+                Departments = await CreateTreeAsync(parent.Id),
+                Employees = employeeItems,
+                Manager = manager
+            };
+            result.Add(departmentItem);
         }
-
         return result;
     }
 
