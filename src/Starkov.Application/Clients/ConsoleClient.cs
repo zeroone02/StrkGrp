@@ -61,8 +61,11 @@ public class ConsoleClient : IConsoleClient
             var prepeare = args.Skip(1).Chunk(2);
             if (prepeare.Count() == 0)
             {
+                var departments = (await _departmentRepository.GetQueryableAsync()).OrderBy(x => x.Name).ToList();
+                var employees = (await _employeeRepository.GetQueryableAsync()).OrderBy(x => x.FullName).ToList();
+
                 WriteLine("Все отделы:", ConsoleColor.DarkYellow);
-                _tree.Departments = await CreateTreeAsync(null);
+                _tree.Departments = await CreateTreeAsync(null, departments, employees);
                 await DrawTreeAsync(_tree.Departments, 1);
             }
             else if (prepeare.Count() == 1)
@@ -72,7 +75,8 @@ public class ConsoleClient : IConsoleClient
                 if (CheckOutputParameters(parameters, out int? id))
                 {
                     var departments = (await _departmentRepository.GetQueryableAsync()).OrderBy(x => x.Name).ToList();
-                    _tree.Departments = await CreateTreeAsync(id.Value);
+                    var employees = (await _employeeRepository.GetQueryableAsync()).OrderBy(x => x.FullName).ToList();
+                    _tree.Departments = await CreateTreeAsync(id.Value, departments, employees);
 
                     var main = await _departmentRepository.GetAsync(id.Value);
                     if (main == null)
@@ -87,13 +91,13 @@ public class ConsoleClient : IConsoleClient
                         WriteLine($"*{main.Manager.FullName}", ConsoleColor.Magenta);
                     }
 
-                    var employees = (await _employeeRepository.GetQueryableAsync())
+                    var departmentEmployees = (await _employeeRepository.GetQueryableAsync())
                         .Where(x => x.DepartmentId == main.Id)
                         .ToList();
 
-                    employees.Remove(main.Manager);
+                    departmentEmployees.Remove(main.Manager);
 
-                    foreach (var employee in employees)
+                    foreach (var employee in departmentEmployees)
                     {
                         WriteLine($"-{employee.FullName}", ConsoleColor.Yellow);
                     }
@@ -197,6 +201,7 @@ public class ConsoleClient : IConsoleClient
             };
             result.Add(departmentItem);
         }
+
         return result;
     }
 
