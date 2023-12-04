@@ -11,10 +11,11 @@ using Starkov.EFCore.Repositories;
 namespace Starkov;
 public class Program
 {
-    public static async Task<int> Main()
+    public static async Task<int> Main(string[] args)
     {
         try
         {
+            //args = "import -t d -p C:\\Users\\User\\Downloads\\dep.tsv".Split(' ').ToArray();
             var provider = ConfigureServices();
             var service = provider.GetRequiredService<IConsoleClient>();
 
@@ -24,11 +25,18 @@ public class Program
                 await context.Database.MigrateAsync();
             }
 
-            await service.RunAsync();
+            await service.RunAsync(args);
 
             return 1;
         }
-        catch (Exception ex)
+        catch (FileNotFoundException ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Файл не найден: " + ex.Message);
+            Console.ForegroundColor = ConsoleColor.White;
+            return 0;
+        }
+        catch(Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(ex);

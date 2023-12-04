@@ -28,9 +28,9 @@ public sealed class TsvReader
 
             yield return new ReaderDepartmentViewModel
             {
-                Name = data[0],
-                ParentDepartment = data[1],
-                ManagerFullName = data[2],
+                Name = data[0].TrimEmptyEntries(),
+                ParentDepartment = data[1].TrimEmptyEntries(),
+                ManagerFullName = data[2].TrimEmptyEntries(),
                 Phone = data[3].NormalizePhoneNumber()
             };
         }
@@ -94,7 +94,7 @@ public sealed class TsvReader
 
             yield return new ReaderJobTitleViewModel
             {
-                Name = data[0]
+                Name = data[0].TrimEmptyEntries()
             };
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Starkov.Application.Common;
 public static class StringExtentions
@@ -24,8 +25,7 @@ public static class StringExtentions
 
     public static string TrimEmptyEntries(this string str)
     {
-        var arr = str.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return string.Join(' ', arr);
+        return Regex.Replace(str, @"\s+", " ").TrimStart().TrimEnd();
     }
 
     public static string ToMd5(this string str)
