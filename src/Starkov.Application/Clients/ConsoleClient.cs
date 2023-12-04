@@ -72,12 +72,14 @@ public class ConsoleClient : IConsoleClient
                 if (CheckOutputParameters(parameters, out int? id))
                 {
                     _tree.Departments = await CreateTreeAsync(id);
+
                     var main = await _departmentRepository.GetAsync(id.Value);
                     if (main == null)
                     {
                         WriteLine("Отдел не найден", ConsoleColor.Yellow);
                         return;
                     }
+
                     WriteLine($"={main.Name} ({main.Id})", ConsoleColor.DarkYellow);
                     if (main.Manager != null)
                     {
@@ -87,11 +89,14 @@ public class ConsoleClient : IConsoleClient
                     var employees = (await _employeeRepository.GetQueryableAsync())
                         .Where(x => x.DepartmentId == main.Id)
                         .ToList();
+
                     employees.Remove(main.Manager);
+
                     foreach (var employee in employees)
                     {
                         WriteLine($"-{employee.FullName}", ConsoleColor.Yellow);
                     }
+
                     await DrawTreeAsync(_tree.Departments, 2);
                 }
             }
