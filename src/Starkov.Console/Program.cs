@@ -15,8 +15,6 @@ public class Program
     {
         try
         {
-            //args = "import -t d -p C:\\Users\\User\\Downloads\\dep.tsv".Split(' ').ToArray();
-            args = "output -id 44".Split(' ').ToArray();
             var provider = ConfigureServices();
             var service = provider.GetRequiredService<IConsoleClient>();
 

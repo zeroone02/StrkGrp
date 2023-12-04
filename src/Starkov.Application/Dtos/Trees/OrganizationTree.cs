@@ -3,7 +3,7 @@
 namespace Starkov.Application.Dtos.Trees;
 public class OrganizationTree
 {
-    public Collection<DepartmentTreeItem> Departments { get; set; }
+    public IEnumerable<DepartmentTreeItem> Departments { get; set; }
     public DepartmentTreeItem GetDepartment(int id)
     {
         var queue = new Queue<DepartmentTreeItem>();
